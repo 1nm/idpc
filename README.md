@@ -10,3 +10,7 @@
 
     ./idpc.py --photo-size 35x45 --print-size 89x127 --dpi 600 photo.jpg 35x45-lban-printable.jpg
 
+
+# Example
+
+![output](https://1nm.org/git/1nm/idpc/uploads/100e4c1baec5cd099f1b7e10a88086d0/output.jpg)
