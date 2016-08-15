@@ -15,7 +15,7 @@ class IDPhotoCreator:
 
     def _mm2px(self, size):
         w, h = size
-        return (int(w / 25.4 * self.dpi), int(h / 25.4 * self.dpi))
+        return int(w / 25.4 * self.dpi), int(h / 25.4 * self.dpi)
 
     def create(self, photo, output):
         w, h = photo.size
