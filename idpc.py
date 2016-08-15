@@ -20,13 +20,15 @@ class IDPhotoCreator:
     def _draw_guide(self, canvas):
         if self.guide:
             with Drawing() as draw:
-                draw.stroke_color = Color('black')
+                draw.stroke_color = Color('silver')
+                draw.fill_color = Color('white')
                 draw.stroke_width = 1
+                draw.stroke_dash_array = 8,9
                 l = int((self.cw - self.pw * self.cols - (self.cols + 1)) / 2)
                 t = int((self.ch - self.ph * self.rows - (self.rows + 1)) / 2)
-                for i in range(self.cols + 1):
+                for i in range(self.rows + 1):
                     draw.line((l, t + i * (self.ph + 1)), (l + self.pw * self.cols + self.cols, t + i * (self.ph + 1)))
-                for j in range(self.rows + 1):
+                for j in range(self.cols + 1):
                     draw.line((l + j * (self.pw + 1), t), (l + j * (self.pw + 1), t + self.ph * self.rows + self.rows))
                 draw(canvas)
 
@@ -61,7 +63,7 @@ def main():
     parser.add_argument('input', help='filename of input photo')
     parser.add_argument('output', nargs='?', default='output.jpg', help='output filename, default value is output.jpg')
     parser.add_argument('--photo-size', nargs='?', default='35x45', help='photo size (size of each tile) widthxheight in mm, default value is 35x45')
-    parser.add_argument('--print-size', nargs='?', default='89x127', help='print size (size of output image) widthxheight in mm, default value is 89x127 (Japanese L ban)')
+    parser.add_argument('--print-size', nargs='?', default='89x127', help='print size (size of output image) widthxheight in mm, default value is 89x127 (L size)')
     parser.add_argument('--dpi', nargs='?', type=int, default='600', help='dpi, default value is 600')
     parser.add_argument('--guide', action='store_true', help='guide will be drawn if True')
     args = parser.parse_args()
