@@ -45,8 +45,7 @@ class IDPhotoCreator:
             photo_resized.resize(self.pw, self.ph)
 
             with Color('white') as bg:
-                with Image(width=self.cw, height=self.ch, background=bg) as canvas:
-                    canvas.format = 'jpeg'
+                with Image(width=self.cw, height=self.ch, background=bg, resolution=self.dpi) as canvas:
                     self._draw_guide(canvas)
                     l = int((self.cw - self.pw * self.cols - (self.cols + 1 if self.guide else 0)) / 2)
                     t = int((self.ch - self.ph * self.rows - (self.rows + 1 if self.guide else 0)) / 2)
