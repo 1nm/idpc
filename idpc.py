@@ -10,12 +10,13 @@ class IDPhotoCreator:
     Creates ID photos
     """
 
-    def __init__(self, photo_size, canvas_size, dpi, border_width):
+    def __init__(self, photo_size, canvas_size, dpi, border_width, annotation):
         self.dpi = int(dpi)
         self.border_width = int(border_width)
         self.annotation = 'Photo size: {} , Paper size: {}'.format(
             ' x '.join(str(x) + 'mm' for x in photo_size),
-            ' x '.join(str(x) + 'mm' for x in canvas_size))
+            ' x '.join(str(x) + 'mm' for x in canvas_size)) if annotation else None
+
         self.canvas_size = self._mm2px(canvas_size)
         self.photo_size = self._mm2px(photo_size)
         self.shape = tuple(
@@ -63,10 +64,11 @@ class IDPhotoCreator:
         """
         Annotate photo size and paper size
         """
-        with Drawing() as draw:
-            draw.font_size = 40
-            draw.text(100, 100, self.annotation)
-            draw(canvas)
+        if self.annotation:
+            with Drawing() as draw:
+                draw.font_size = 40
+                draw.text(100, 100, self.annotation)
+                draw(canvas)
 
     def create(self, photo, output):
         """
@@ -125,6 +127,21 @@ def main():
         default='output.jpg',
         help='output filename, default value is output.jpg')
     parser.add_argument(
+        '-a',
+        '--annotation',
+        nargs='?',
+        const=True,
+        type=lambda x: x.lower() in ['yes', 'true', 't', 'y', '1'],
+        default=False,
+        help='writes photo size and paper size on image')
+    parser.add_argument(
+        '-d',
+        '--dpi',
+        nargs='?',
+        type=int,
+        default='600',
+        help='dpi, default value is 600')
+    parser.add_argument(
         '-s',
         '--photo-size',
         nargs='?',
@@ -141,13 +158,6 @@ def main():
         'paper size (size of paper used for print) widthxheight in mm, default value is 89x127 (L size)'
     )
     parser.add_argument(
-        '-d',
-        '--dpi',
-        nargs='?',
-        type=int,
-        default='600',
-        help='dpi, default value is 600')
-    parser.add_argument(
         '-w',
         '--border-width',
         nargs='?',
@@ -157,7 +167,7 @@ def main():
     args = parser.parse_args()
     photo_size = tuple(map(int, args.photo_size.split('x')))
     canvas_size = tuple(map(int, args.paper_size.split('x')))
-    idpc = IDPhotoCreator(photo_size, canvas_size, args.dpi, args.border_width)
+    idpc = IDPhotoCreator(photo_size, canvas_size, args.dpi, args.border_width, args.annotation)
     with Image(filename=args.input) as photo:
         idpc.create(photo, args.output)
 
