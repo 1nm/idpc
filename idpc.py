@@ -7,108 +7,115 @@ from wand.image import Image
 
 class IDPhotoCreator:
     """
-    doc string
+    Creates ID photos
     """
 
     def __init__(self, photo_size, canvas_size, dpi, border_width):
-        self.dpi = dpi
-        self.canvas_width, self.canvas_height = self._mm2px(
-            canvas_size)  # canvas width and height
-        self.photo_width, self.photo_height = self._mm2px(
-            photo_size)  # photo width and height
-        blank_width, blank_height = self._mm2px(
-            (10, 10))  # edge blank width and height
-        self.cols, self.rows = int(
-            (self.canvas_width - blank_width) / self.photo_width), int(
-                (self.canvas_height - blank_height) / self.photo_height)
-        self.border_width = border_width
+        self.dpi = int(dpi)
+        self.border_width = int(border_width)
+        self.annotation = 'Photo size: {} , Paper size: {}'.format(
+            ' x '.join(str(x) + 'mm' for x in photo_size),
+            ' x '.join(str(x) + 'mm' for x in canvas_size))
+        self.canvas_size = self._mm2px(canvas_size)
+        self.photo_size = self._mm2px(photo_size)
+        self.shape = tuple(
+            map(lambda x, y, z: int((x - y) / z),
+                self.canvas_size,
+                self._mm2px((10, 10)),
+                self.photo_size))  # number of columns and rows
+        self.pos = tuple(
+            map(lambda x, y, z: int((x - y * z - (z + 1) * self.border_width) / 2),
+                self.canvas_size,
+                self.photo_size,
+                self.shape))  # initial top and left
 
     def _mm2px(self, size):
-        width, height = size
-        return int(width / 25.4 * self.dpi), int(height / 25.4 * self.dpi)
+        return tuple(map(lambda x: int(x / 25.4 * self.dpi), size))
 
-    def _draw_guide(self, canvas):
+    def draw_border(self, canvas):
+        """
+        Draws the border around photos
+        """
         if self.border_width > 0:
             with Drawing() as draw:
                 draw.stroke_color = Color('black')
                 draw.stroke_width = self.border_width
-                initial_left = int(
-                    (self.canvas_width - self.photo_width * self.cols -
-                     (self.cols + 1) * self.border_width) / 2)
-                initial_top = int(
-                    (self.canvas_height - self.photo_height * self.rows -
-                     (self.rows + 1) * self.border_width) / 2)
-                for i in range(self.rows + 1):
+                initial_left, initial_top = self.pos
+                cols, rows = self.shape
+                photo_width, photo_height = self.photo_size
+                for i in range(rows + 1):
                     draw.line(
-                        (initial_left - int(self.border_width / 2), initial_top +
-                         i * (self.photo_height + self.border_width)),
+                        (initial_left - int(self.border_width / 2),
+                         initial_top + i * (photo_height + self.border_width)),
                         (initial_left + int(self.border_width / 2) +
-                         (self.photo_width + self.border_width) * self.cols,
-                         initial_top + i *
-                         (self.photo_height + self.border_width)))
-                for j in range(self.cols + 1):
+                         (photo_width + self.border_width) * cols,
+                         initial_top + i * (photo_height + self.border_width)))
+                for j in range(cols + 1):
                     draw.line(
-                        (initial_left + j *
-                         (self.photo_width + self.border_width),
+                        (initial_left + j * (photo_width + self.border_width),
                          initial_top - int(self.border_width / 2)),
-                        (initial_left + j *
-                         (self.photo_width + self.border_width),
+                        (initial_left + j * (photo_width + self.border_width),
                          initial_top + int(self.border_width / 2) +
-                         (self.photo_height + self.border_width) * self.rows))
+                         (photo_height + self.border_width) * rows))
                 draw(canvas)
 
-    def _annotate(self, canvas):
-        pass
+    def annotate(self, canvas):
+        """
+        Annotate photo size and paper size
+        """
+        with Drawing() as draw:
+            draw.font_size = 40
+            draw.text(100, 100, self.annotation)
+            draw(canvas)
 
     def create(self, photo, output):
         """
-        doc string
+        Resizes the image, creates tiles, and writes the final image to file
         """
 
         width, height = photo.size
+        photo_width, photo_height = self.photo_size
+        canvas_width, canvas_height = self.canvas_size
 
-        if width < self.photo_width or height < self.photo_height:
+        if width < photo_width or height < photo_height:
             raise TypeError(
                 'Image size must be no smaller than {}x{} while size of input is {}x{}'.
-                format(self.photo_width, self.photo_height, width, height))
+                format(photo_width, photo_height, width, height))
 
         with photo.clone() as photo_resized:
-            aspect = float(self.photo_width) / float(self.photo_height)
+            aspect = float(photo_width) / float(photo_height)
             if float(width) / float(height) > aspect:
                 width = int(height * aspect)
             else:
                 height = int(width / aspect)
             photo_resized.crop(width=width, height=height, gravity='center')
             # crop and resize input photo
-            photo_resized.resize(self.photo_width, self.photo_height)
+            photo_resized.resize(photo_width, photo_height)
 
             with Color('white') as background:
                 with Image(
-                        width=self.canvas_width,
-                        height=self.canvas_height,
+                        width=canvas_width,
+                        height=canvas_height,
                         background=background,
                         resolution=self.dpi) as canvas:
-                    self._draw_guide(canvas)
-                    initial_left = int(
-                        (self.canvas_width - self.photo_width * self.cols -
-                         (self.cols + 1) * self.border_width) / 2)
-                    initial_top = int(
-                        (self.canvas_height - self.photo_height * self.rows -
-                         (self.rows + 1) * self.border_width) / 2)
-                    for i in range(self.cols):
-                        for j in range(self.rows):
-                            left = initial_left + i * self.photo_width + \
+                    self.draw_border(canvas)
+                    initial_left, initial_top = self.pos
+                    cols, rows = self.shape
+                    for i in range(cols):
+                        for j in range(rows):
+                            left = initial_left + i * photo_width + \
                                 (i + 1) * self.border_width - int(self.border_width / 2)
-                            top = initial_top + j * self.photo_height + \
+                            top = initial_top + j * photo_height + \
                                 (j + 1) * self.border_width - int(self.border_width / 2)
                             canvas.composite(
                                 top=top, left=left, image=photo_resized)
+                    self.annotate(canvas)
                     canvas.save(filename=output)
 
 
 def main():
     """
-    main function
+    Main function, parses the arguments and create the photo
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help='filename of input photo')
@@ -146,10 +153,10 @@ def main():
         nargs='?',
         type=int,
         default=2,
-        help='border width in mm, default value is 2')
+        help='border width in px, default value is 2')
     args = parser.parse_args()
-    photo_size = map(int, args.photo_size.split('x'))
-    canvas_size = map(int, args.paper_size.split('x'))
+    photo_size = tuple(map(int, args.photo_size.split('x')))
+    canvas_size = tuple(map(int, args.paper_size.split('x')))
     idpc = IDPhotoCreator(photo_size, canvas_size, args.dpi, args.border_width)
     with Image(filename=args.input) as photo:
         idpc.create(photo, args.output)
