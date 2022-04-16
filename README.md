@@ -36,4 +36,4 @@ Make sure you have `input.jpg` under your current directory and run:
 docker run --rm -v $PWD:/data x1nm/idpc idpc --annotation --photo-size=24x30 --paper-size=89x127 /data/input.jpg /data/output.jpg
 ```
 
-![](https://user-images.githubusercontent.com/1180083/163660579-fecc8304-0384-479f-93bb-d70e7fe7a89a.jpg)
+<img src="https://user-images.githubusercontent.com/1180083/163660579-fecc8304-0384-479f-93bb-d70e7fe7a89a.jpg" height="600px"/>
