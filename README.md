@@ -2,25 +2,10 @@
 
 Create ready-for-print tiled ID photos
 
-# Prerequisites
+## Usage
 
-* Python 3
-  * Wand 0.4.3
-  * argparse 1.4.0
-* Imagemagick 6
-
-
-## Install Prerequisites with Homebrew
-
-```SH
-brew install python3 imagemagick@6
-pip3 install -r requirements.txt
-```
-
-# Usage
-
-```
-usage: idpc.py [-h] [-a] [-d [DPI]] [-s [PHOTO_SIZE]] [-S [PAPER_SIZE]]
+```shell
+usage: idpc [-h] [-a] [-d [DPI]] [-s [PHOTO_SIZE]] [-S [PAPER_SIZE]]
                [-w [BORDER_WIDTH]]
                INPUT_FILE [OUTPUT_FILE]
 
@@ -43,8 +28,12 @@ optional arguments:
                         border width in px, default value is 2
 ```
 
-# Example
+## Example
 
-```SH
-./idpc.py -a -S 3R input.jpg
+Make sure you have `input.jpg` under your current directory and run:
+
+```shell
+docker run --rm -v $PWD:/data x1nm/idpc idpc --annotation --photo-size=24x30 --paper-size=89x127 /data/input.jpg /data/output.jpg
 ```
+
+![](https://user-images.githubusercontent.com/1180083/163660579-fecc8304-0384-479f-93bb-d70e7fe7a89a.jpg)
