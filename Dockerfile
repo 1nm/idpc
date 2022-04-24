@@ -4,3 +4,6 @@ COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt && rm -f /requirements.txt
 COPY idpc.py /usr/local/bin/idpc
 RUN chmod +x /usr/local/bin/idpc
+
+WORKDIR /data
+ENTRYPOINT ["/usr/local/bin/idpc"]
